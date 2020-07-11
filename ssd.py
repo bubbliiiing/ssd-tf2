@@ -12,7 +12,7 @@ class SSD(object):
     #   model_path和classes_path都需要修改！
     #--------------------------------------------#
     _defaults = {
-        "model_path": 'logs/ep004-loss2.244-val_loss2.174.h5',
+        "model_path": 'model_data/ssd_weights.h5',
         "classes_path": 'model_data/voc_classes.txt',
         "model_image_size" : (300, 300, 3),
         "confidence": 0.5,
