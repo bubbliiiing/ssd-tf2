@@ -5,7 +5,7 @@ from nets import ssd
 from PIL import Image,ImageFont, ImageDraw
 from tensorflow.keras.applications.imagenet_utils import preprocess_input
 from utils.utils import BBoxUtility,letterbox_image,ssd_correct_boxes
-
+import tensorflow as tf
 class SSD(object):
     #--------------------------------------------#
     #   使用自己训练好的模型预测需要修改2个参数
@@ -71,6 +71,11 @@ class SSD(object):
             map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)),
                 self.colors))
 
+    @tf.function
+    def get_pred(self, photo):
+        preds = self.ssd_model(photo, training=False)
+        return preds
+
     #---------------------------------------------------#
     #   检测图片
     #---------------------------------------------------#
@@ -81,7 +86,7 @@ class SSD(object):
 
         # 图片预处理，归一化
         photo = preprocess_input(np.reshape(photo,[1,self.model_image_size[0],self.model_image_size[1],3]))
-        preds = self.ssd_model.predict(photo)
+        preds = self.get_pred(photo).numpy()
 
         # 将预测结果进行解码
         results = self.bbox_util.detection_out(preds, confidence_threshold=self.confidence)
