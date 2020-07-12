@@ -137,7 +137,7 @@ class BBoxUtility(object):
         # 获得先验框的中心点
         prior_center_x = 0.5 * (mbox_priorbox[:, 2] + mbox_priorbox[:, 0])
         prior_center_y = 0.5 * (mbox_priorbox[:, 3] + mbox_priorbox[:, 1])
-        print(np.shape(mbox_loc[:, 0]), np.shape(prior_width), np.shape(variances[:, 0]))
+        
         # 真实框距离先验框中心的xy轴偏移情况
         decode_bbox_center_x = mbox_loc[:, 0] * prior_width * variances[:, 0]
         decode_bbox_center_x += prior_center_x
