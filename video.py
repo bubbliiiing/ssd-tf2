@@ -3,9 +3,15 @@
 #-------------------------------------#
 from ssd import SSD
 from PIL import Image
+import tensorflow as tf
 import numpy as np
 import cv2
 import time
+
+gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
+    
 ssd = SSD()
 # 调用摄像头
 capture=cv2.VideoCapture(0) # capture=cv2.VideoCapture("1.mp4")
