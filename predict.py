@@ -18,5 +18,4 @@ while True:
     else:
         r_image = ssd.detect_image(image)
         r_image.show()
-ssd.close_session()
     
