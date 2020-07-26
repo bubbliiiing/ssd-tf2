@@ -72,7 +72,7 @@ if __name__ == "__main__":
         #   BATCH_SIZE不要太小，不然训练效果很差
         #--------------------------------------------#
         BATCH_SIZE = 8
-        Lr = 1e-4
+        Lr = 5e-4
         Init_Epoch = 0
         Freeze_Epoch = 25
         gen = Generator(bbox_util, BATCH_SIZE, lines[:num_train], lines[num_train:],
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         #   BATCH_SIZE不要太小，不然训练效果很差
         #--------------------------------------------#
         BATCH_SIZE = 8
-        Lr = 1e-5
+        Lr = 1e-4
         Freeze_Epoch = 25
         Epoch = 50
         gen = Generator(bbox_util, BATCH_SIZE, lines[:num_train], lines[num_train:],
