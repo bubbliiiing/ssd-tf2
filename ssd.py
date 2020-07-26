@@ -148,5 +148,3 @@ class SSD(object):
             del draw
         return image
 
-    def close_session(self):
-        self.sess.close()
