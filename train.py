@@ -74,7 +74,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 8
         Lr = 5e-4
         Init_Epoch = 0
-        Freeze_Epoch = 25
+        Freeze_Epoch = 50
         gen = Generator(bbox_util, BATCH_SIZE, lines[:num_train], lines[num_train:],
                     (input_shape[0], input_shape[1]),NUM_CLASSES)
 
@@ -95,8 +95,8 @@ if __name__ == "__main__":
         #--------------------------------------------#
         BATCH_SIZE = 8
         Lr = 1e-4
-        Freeze_Epoch = 25
-        Epoch = 50
+        Freeze_Epoch = 50
+        Epoch = 100
         gen = Generator(bbox_util, BATCH_SIZE, lines[:num_train], lines[num_train:],
                     (input_shape[0], input_shape[1]),NUM_CLASSES)
 
