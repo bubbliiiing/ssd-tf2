@@ -218,3 +218,5 @@ if __name__ == "__main__":
         for epoch in range(Freeze_Epoch,Epoch):
             fit_one_epoch(model, multiloss, optimizer, epoch, epoch_size, epoch_size_val, gen, gen_val, 
                         Epoch)
+
+            
