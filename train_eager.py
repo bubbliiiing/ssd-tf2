@@ -11,19 +11,22 @@ from functools import partial
 from tqdm import tqdm
 import time
 
-@tf.function
-def train_step(imgs, multiloss, targets, net, optimizer):
-    with tf.GradientTape() as tape:
-        # 计算loss
-        prediction = net(imgs, training=True)
-        loss_value = multiloss(targets, prediction)
+# 防止bug
+def get_train_step_fn():
+    @tf.function
+    def train_step(imgs, multiloss, targets, net, optimizer):
+        with tf.GradientTape() as tape:
+            # 计算loss
+            prediction = net(imgs, training=True)
+            loss_value = multiloss(targets, prediction)
 
-    grads = tape.gradient(loss_value, net.trainable_variables)
-    optimizer.apply_gradients(zip(grads, net.trainable_variables))
-    return loss_value
+        grads = tape.gradient(loss_value, net.trainable_variables)
+        optimizer.apply_gradients(zip(grads, net.trainable_variables))
+        return loss_value
+    return train_step
 
 @tf.function
-def val_step(imgs, multiloss, targets, net, optimizer):
+def val_step(imgs, multiloss, targets, net):
     # 计算loss
     prediction = net(imgs)
     loss_value = multiloss(targets, prediction)
@@ -31,7 +34,7 @@ def val_step(imgs, multiloss, targets, net, optimizer):
     return loss_value
 
 def fit_one_epoch(net, multiloss, optimizer, epoch, epoch_size, epoch_size_val, gen, genval, 
-                Epoch):
+                Epoch, train_step):
 
     total_loss = 0
     val_loss = 0
@@ -47,6 +50,7 @@ def fit_one_epoch(net, multiloss, optimizer, epoch, epoch_size, epoch_size_val, 
 
             waste_time = time.time() - start_time
             pbar.set_postfix(**{'total_loss'        : float(total_loss) / (iteration + 1), 
+                                'lr'                : optimizer._decayed_lr(tf.float32).numpy(),
                                 'step/s'            : waste_time})
             pbar.update(1)
             start_time = time.time()
@@ -60,7 +64,7 @@ def fit_one_epoch(net, multiloss, optimizer, epoch, epoch_size, epoch_size_val, 
             images, targets = batch[0], batch[1]
             targets = tf.convert_to_tensor(targets)
 
-            loss_value, _, _ = val_step(images, multiloss, targets, net, optimizer)
+            loss_value = val_step(images, multiloss, targets, net)
             # 更新验证集loss
             val_loss = val_loss + loss_value
 
@@ -171,7 +175,7 @@ if __name__ == "__main__":
 
         for epoch in range(Init_Epoch,Freeze_Epoch):
             fit_one_epoch(model, multiloss, optimizer, epoch, epoch_size, epoch_size_val, gen, gen_val, 
-                        Freeze_Epoch)
+                        Freeze_Epoch, get_train_step_fn())
 
     for i in range(freeze_layer):
         model.layers[i].trainable = True
@@ -217,6 +221,6 @@ if __name__ == "__main__":
         
         for epoch in range(Freeze_Epoch,Epoch):
             fit_one_epoch(model, multiloss, optimizer, epoch, epoch_size, epoch_size_val, gen, gen_val, 
-                        Epoch)
+                        Epoch, get_train_step_fn())
 
             
