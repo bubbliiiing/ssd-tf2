@@ -166,7 +166,7 @@ if __name__ == "__main__":
         lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
             initial_learning_rate=Lr,
             decay_steps=epoch_size,
-            decay_rate=0.9,
+            decay_rate=0.95,
             staircase=True
         )
 
@@ -212,7 +212,7 @@ if __name__ == "__main__":
         lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
             initial_learning_rate=Lr,
             decay_steps=epoch_size,
-            decay_rate=0.9,
+            decay_rate=0.95,
             staircase=True
         )
 
