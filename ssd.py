@@ -1,21 +1,30 @@
-import numpy as np
 import colorsys
 import os
-from nets import ssd
-from PIL import Image,ImageFont, ImageDraw
-from tensorflow.keras.applications.imagenet_utils import preprocess_input
-from utils.utils import BBoxUtility,letterbox_image,ssd_correct_boxes
+
+import numpy as np
 import tensorflow as tf
+from PIL import Image, ImageDraw, ImageFont
+from tensorflow.keras.applications.imagenet_utils import preprocess_input
+
+from nets import ssd
+from utils.utils import BBoxUtility, letterbox_image, ssd_correct_boxes
+
+
+#--------------------------------------------#
+#   使用自己训练好的模型预测需要修改2个参数
+#   model_path和classes_path都需要修改！
+#   如果出现shape不匹配
+#   一定要注意训练时的NUM_CLASSES、
+#   model_path和classes_path参数的修改
+#--------------------------------------------#
 class SSD(object):
-    #--------------------------------------------#
-    #   使用自己训练好的模型预测需要修改2个参数
-    #   model_path和classes_path都需要修改！
-    #--------------------------------------------#
     _defaults = {
-        "model_path": 'model_data/ssd_weights.h5',
-        "classes_path": 'model_data/voc_classes.txt',
-        "model_image_size" : (300, 300, 3),
-        "confidence": 0.5,
+        "model_path"        : 'model_data/ssd_weights.h5',
+        "classes_path"      : 'model_data/voc_classes.txt',
+        "input_shape"       : (300, 300, 3),
+        "confidence"        : 0.5,
+        "nms_iou"           : 0.45,
+        'anchors_size'      : [30,60,111,162,213,264,315]
     }
 
     @classmethod
@@ -33,6 +42,7 @@ class SSD(object):
         self.class_names = self._get_class()
         self.generate()
         self.bbox_util = BBoxUtility(self.num_classes)
+
     #---------------------------------------------------#
     #   获得所有的分类
     #---------------------------------------------------#
@@ -42,7 +52,6 @@ class SSD(object):
             class_names = f.readlines()
         class_names = [c.strip() for c in class_names]
         return class_names
-
 
     #---------------------------------------------------#
     #   获得所有的分类
@@ -54,10 +63,8 @@ class SSD(object):
         # 计算总的种类
         self.num_classes = len(self.class_names) + 1
 
-        # 载入模型，如果原来的模型里已经包括了模型结构则直接载入。
-        # 否则先构建模型再载入
-
-        self.ssd_model = ssd.SSD300(self.model_image_size,self.num_classes)
+        # 载入模型
+        self.ssd_model = ssd.SSD300(self.input_shape, self.num_classes, anchors_size=self.anchors_size)
         self.ssd_model.load_weights(self.model_path,by_name=True)
 
         self.ssd_model.summary()
@@ -81,11 +88,11 @@ class SSD(object):
     #---------------------------------------------------#
     def detect_image(self, image):
         image_shape = np.array(np.shape(image)[0:2])
-        crop_img,x_offset,y_offset = letterbox_image(image, (self.model_image_size[0],self.model_image_size[1]))
+        crop_img = letterbox_image(image, (self.input_shape[1],self.input_shape[0]))
         photo = np.array(crop_img,dtype = np.float64)
 
         # 图片预处理，归一化
-        photo = preprocess_input(np.reshape(photo,[1,self.model_image_size[0],self.model_image_size[1],3]))
+        photo = preprocess_input(np.reshape(photo,[1,self.input_shape[0],self.input_shape[1],3]))
         preds = self.get_pred(photo).numpy()
 
         # 将预测结果进行解码
@@ -104,11 +111,11 @@ class SSD(object):
         top_xmin, top_ymin, top_xmax, top_ymax = np.expand_dims(det_xmin[top_indices],-1),np.expand_dims(det_ymin[top_indices],-1),np.expand_dims(det_xmax[top_indices],-1),np.expand_dims(det_ymax[top_indices],-1)
         
         # 去掉灰条
-        boxes = ssd_correct_boxes(top_ymin,top_xmin,top_ymax,top_xmax,np.array([self.model_image_size[0],self.model_image_size[1]]),image_shape)
+        boxes = ssd_correct_boxes(top_ymin,top_xmin,top_ymax,top_xmax,np.array([self.input_shape[0],self.input_shape[1]]),image_shape)
 
         font = ImageFont.truetype(font='model_data/simhei.ttf',size=np.floor(3e-2 * np.shape(image)[1] + 0.5).astype('int32'))
 
-        thickness = (np.shape(image)[0] + np.shape(image)[1]) // self.model_image_size[0]
+        thickness = (np.shape(image)[0] + np.shape(image)[1]) // self.input_shape[0]
 
         for i, c in enumerate(top_label_indices):
             predicted_class = self.class_names[int(c)-1]
@@ -130,7 +137,7 @@ class SSD(object):
             draw = ImageDraw.Draw(image)
             label_size = draw.textsize(label, font)
             label = label.encode('utf-8')
-            print(label)
+            print(label, top, left, bottom, right)
             
             if top - label_size[1] >= 0:
                 text_origin = np.array([left, top - label_size[1]])
