@@ -22,8 +22,7 @@ tensorflow-gpu==2.2.0
 
 ## 文件下载
 训练所需的ssd_weights.h5可以在百度云下载。  
-链接: https://pan.baidu.com/s/17diCwawNy9WcqXhddl8qIw  
-提取码: kquc  
+链接: https://pan.baidu.com/s/10l02SiObuzbrv-oYRwYNAg 提取码: 7jck
 
 ## 预测步骤
 ### a、使用预训练权重
