@@ -68,7 +68,7 @@ def fit_one_epoch(net, multiloss, optimizer, epoch, epoch_size, epoch_size_val, 
             pbar.set_postfix(**{'total_loss': float(val_loss)/ (iteration + 1)})
             pbar.update(1)
 
-    logs = {'loss': total_loss/(epoch_size+1), 'val_loss': val_loss/(epoch_size_val+1)}
+    logs = {'loss': total_loss.numpy()/(epoch_size+1), 'val_loss': val_loss.numpy()/(epoch_size_val+1)}
     loss_history.on_epoch_end([], logs)
     print('Finish Validation')
     print('\nEpoch:'+ str(epoch+1) + '/' + str(Epoch))
