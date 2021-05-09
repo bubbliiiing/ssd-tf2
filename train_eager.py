@@ -4,13 +4,11 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.callbacks import (EarlyStopping, ReduceLROnPlateau,
-                                        TensorBoard)
 from tensorflow.keras.optimizers import Adam
 from tqdm import tqdm
 
 from nets.ssd import SSD300
-from nets.ssd_training import Generator, MultiboxLoss
+from nets.ssd_training import Generator, MultiboxLoss, LossHistory
 from utils.anchors import get_anchors
 from utils.utils import BBoxUtility
 
@@ -70,6 +68,8 @@ def fit_one_epoch(net, multiloss, optimizer, epoch, epoch_size, epoch_size_val, 
             pbar.set_postfix(**{'total_loss': float(val_loss)/ (iteration + 1)})
             pbar.update(1)
 
+    logs = {'loss': total_loss/(epoch_size+1), 'val_loss': val_loss/(epoch_size_val+1)}
+    loss_history.on_epoch_end([], logs)
     print('Finish Validation')
     print('\nEpoch:'+ str(epoch+1) + '/' + str(Epoch))
     print('Total Loss: %.4f || Val Loss: %.4f ' % (total_loss/(epoch_size+1),val_loss/(epoch_size_val+1)))
@@ -135,6 +135,7 @@ if __name__ == "__main__":
     model.load_weights(model_path, by_name=True, skip_mismatch=True)
 
     multiloss = MultiboxLoss(NUM_CLASSES, neg_pos_ratio=3.0).compute_loss
+    loss_history = LossHistory(log_dir)
 
     #----------------------------------------------------------------------#
     #   验证集的划分在train.py代码里面进行
