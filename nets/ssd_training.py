@@ -7,9 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal
 import tensorflow as tf
-from matplotlib.colors import hsv_to_rgb, rgb_to_hsv
 from PIL import Image
-from tensorflow.keras import backend as K
 from tensorflow.keras.applications.imagenet_utils import preprocess_input
 
 
@@ -124,7 +122,6 @@ class MultiboxLoss(object):
 
 def rand(a=0, b=1):
     return np.random.rand()*(b-a) + a
-
 
 class Generator(object):
     def __init__(self, bbox_util,batch_size,

@@ -1,8 +1,4 @@
-import tensorflow.keras.backend as K
-from tensorflow.keras.layers import (Activation, Conv2D, Dense, Flatten,
-                                     GlobalAveragePooling2D, Input,
-                                     MaxPooling2D, Reshape, ZeroPadding2D)
-from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
 
 
 def VGG16(input_tensor):

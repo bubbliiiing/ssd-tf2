@@ -1,8 +1,5 @@
-import tensorflow.keras.backend as K
-#from keras.layers import AtrousConvolution2D
-from tensorflow.keras.layers import (Activation, Concatenate, Conv2D, Dense,
-                                     Flatten, GlobalAveragePooling2D, Input,
-                                     MaxPooling2D, Reshape, ZeroPadding2D)
+from tensorflow.keras.layers import (Activation, Concatenate, Conv2D, Flatten,
+                                     Input, Reshape)
 from tensorflow.keras.models import Model
 
 from nets.ssd_layers import Normalize, PriorBox
