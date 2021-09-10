@@ -87,7 +87,8 @@ class SSD(object):
             map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)),
                 self.colors))
 
-    @tf.function
+    # @tf.function
+    # 经测试 该装饰器会引起内存溢出 注释即可 不会十分影响效率
     def get_pred(self, photo):
         preds = self.ssd_model(photo, training=False)
         return preds
