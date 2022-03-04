@@ -193,7 +193,7 @@ if __name__ == "__main__":
     num_classes += 1
     anchors = get_anchors(input_shape, anchors_size)
 
-    model = SSD300((input_shape[0], input_shape[1], 3), num_classes)
+    model = SSD300((input_shape[0], input_shape[1], 3), num_classes, weight_decay = weight_decay)
     if model_path != '':
         #------------------------------------------------------#
         #   载入预训练权重

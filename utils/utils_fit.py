@@ -8,6 +8,10 @@ def get_train_step_fn():
         with tf.GradientTape() as tape:
             prediction = net(images, training=True)
             loss_value = multiloss(targets, prediction)
+            #------------------------------#
+            #   添加上l2正则化参数
+            #------------------------------#
+            loss_value  = tf.reduce_sum(net.losses) + loss_value
         grads = tape.gradient(loss_value, net.trainable_variables)
         optimizer.apply_gradients(zip(grads, net.trainable_variables))
         return loss_value
@@ -17,6 +21,10 @@ def get_train_step_fn():
 def val_step(images, multiloss, targets, net):
     prediction = net(images)
     loss_value = multiloss(targets, prediction)
+    #------------------------------#
+    #   添加上l2正则化参数
+    #------------------------------#
+    loss_value  = tf.reduce_sum(net.losses) + loss_value
     return loss_value
 
 def fit_one_epoch(net, multiloss, loss_history, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, Epoch, save_period):

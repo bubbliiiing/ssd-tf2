@@ -3,6 +3,7 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.layers import (Activation, Concatenate, Conv2D, Flatten,
                                      Input, InputSpec, Layer, Reshape)
 from tensorflow.keras.models import Model
+from tensorflow.keras.regularizers import l2
 
 from nets.vgg import VGG16
 
@@ -24,14 +25,14 @@ class Normalize(Layer):
         output *= self.gamma
         return output
 
-def SSD300(input_shape, num_classes=21):
+def SSD300(input_shape, num_classes=21, weight_decay=5e-4):
     #---------------------------------#
     #   典型的输入大小为[300,300,3]
     #---------------------------------#
     input_tensor = Input(shape=input_shape)
     
     # net变量里面包含了整个SSD的结构，通过层名可以找到对应的特征层
-    net = VGG16(input_tensor)
+    net = VGG16(input_tensor, weight_decay=weight_decay)
     
     #-----------------------将提取到的主干特征进行处理---------------------------#
     # 对conv4_3的通道进行l2标准化处理 
@@ -40,10 +41,10 @@ def SSD300(input_shape, num_classes=21):
     num_priors = 4
     # 预测框的处理
     # num_priors表示每个网格点先验框的数量，4是x,y,h,w的调整
-    net['conv4_3_norm_mbox_loc']        = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same', name='conv4_3_norm_mbox_loc')(net['conv4_3_norm'])
+    net['conv4_3_norm_mbox_loc']        = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv4_3_norm_mbox_loc')(net['conv4_3_norm'])
     net['conv4_3_norm_mbox_loc_flat']   = Flatten(name='conv4_3_norm_mbox_loc_flat')(net['conv4_3_norm_mbox_loc'])
     # num_priors表示每个网格点先验框的数量，num_classes是所分的类
-    net['conv4_3_norm_mbox_conf']       = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same',name='conv4_3_norm_mbox_conf')(net['conv4_3_norm'])
+    net['conv4_3_norm_mbox_conf']       = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv4_3_norm_mbox_conf')(net['conv4_3_norm'])
     net['conv4_3_norm_mbox_conf_flat']  = Flatten(name='conv4_3_norm_mbox_conf_flat')(net['conv4_3_norm_mbox_conf'])
 
     # 对fc7层进行处理 
@@ -51,10 +52,10 @@ def SSD300(input_shape, num_classes=21):
     num_priors = 6
     # 预测框的处理
     # num_priors表示每个网格点先验框的数量，4是x,y,h,w的调整
-    net['fc7_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3),padding='same',name='fc7_mbox_loc')(net['fc7'])
+    net['fc7_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='fc7_mbox_loc')(net['fc7'])
     net['fc7_mbox_loc_flat']    = Flatten(name='fc7_mbox_loc_flat')(net['fc7_mbox_loc'])
     # num_priors表示每个网格点先验框的数量，num_classes是所分的类
-    net['fc7_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3),padding='same',name='fc7_mbox_conf')(net['fc7'])
+    net['fc7_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='fc7_mbox_conf')(net['fc7'])
     net['fc7_mbox_conf_flat']   = Flatten(name='fc7_mbox_conf_flat')(net['fc7_mbox_conf'])
 
     # 对conv6_2进行处理
@@ -62,10 +63,10 @@ def SSD300(input_shape, num_classes=21):
     num_priors = 6
     # 预测框的处理
     # num_priors表示每个网格点先验框的数量，4是x,y,h,w的调整
-    net['conv6_2_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same',name='conv6_2_mbox_loc')(net['conv6_2'])
+    net['conv6_2_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv6_2_mbox_loc')(net['conv6_2'])
     net['conv6_2_mbox_loc_flat']    = Flatten(name='conv6_2_mbox_loc_flat')(net['conv6_2_mbox_loc'])
     # num_priors表示每个网格点先验框的数量，num_classes是所分的类
-    net['conv6_2_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same',name='conv6_2_mbox_conf')(net['conv6_2'])
+    net['conv6_2_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv6_2_mbox_conf')(net['conv6_2'])
     net['conv6_2_mbox_conf_flat']   = Flatten(name='conv6_2_mbox_conf_flat')(net['conv6_2_mbox_conf'])
 
     # 对conv7_2进行处理
@@ -73,10 +74,10 @@ def SSD300(input_shape, num_classes=21):
     num_priors = 6
     # 预测框的处理
     # num_priors表示每个网格点先验框的数量，4是x,y,h,w的调整
-    net['conv7_2_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same',name='conv7_2_mbox_loc')(net['conv7_2'])
+    net['conv7_2_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv7_2_mbox_loc')(net['conv7_2'])
     net['conv7_2_mbox_loc_flat']    = Flatten(name='conv7_2_mbox_loc_flat')(net['conv7_2_mbox_loc'])
     # num_priors表示每个网格点先验框的数量，num_classes是所分的类
-    net['conv7_2_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same',name='conv7_2_mbox_conf')(net['conv7_2'])
+    net['conv7_2_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv7_2_mbox_conf')(net['conv7_2'])
     net['conv7_2_mbox_conf_flat']   = Flatten(name='conv7_2_mbox_conf_flat')(net['conv7_2_mbox_conf'])
 
     # 对conv8_2进行处理
@@ -84,10 +85,10 @@ def SSD300(input_shape, num_classes=21):
     num_priors = 4
     # 预测框的处理
     # num_priors表示每个网格点先验框的数量，4是x,y,h,w的调整
-    net['conv8_2_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same',name='conv8_2_mbox_loc')(net['conv8_2'])
+    net['conv8_2_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv8_2_mbox_loc')(net['conv8_2'])
     net['conv8_2_mbox_loc_flat']    = Flatten(name='conv8_2_mbox_loc_flat')(net['conv8_2_mbox_loc'])
     # num_priors表示每个网格点先验框的数量，num_classes是所分的类
-    net['conv8_2_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same',name='conv8_2_mbox_conf')(net['conv8_2'])
+    net['conv8_2_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv8_2_mbox_conf')(net['conv8_2'])
     net['conv8_2_mbox_conf_flat']   = Flatten(name='conv8_2_mbox_conf_flat')(net['conv8_2_mbox_conf'])
 
     # 对conv9_2进行处理
@@ -95,10 +96,10 @@ def SSD300(input_shape, num_classes=21):
     num_priors = 4
     # 预测框的处理
     # num_priors表示每个网格点先验框的数量，4是x,y,h,w的调整
-    net['conv9_2_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same',name='conv9_2_mbox_loc')(net['conv9_2'])
+    net['conv9_2_mbox_loc']         = Conv2D(num_priors * 4, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv9_2_mbox_loc')(net['conv9_2'])
     net['conv9_2_mbox_loc_flat']    = Flatten(name='conv9_2_mbox_loc_flat')(net['conv9_2_mbox_loc'])
     # num_priors表示每个网格点先验框的数量，num_classes是所分的类
-    net['conv9_2_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same',name='conv9_2_mbox_conf')(net['conv9_2'])
+    net['conv9_2_mbox_conf']        = Conv2D(num_priors * num_classes, kernel_size=(3,3), padding='same', kernel_regularizer=l2(weight_decay), name='conv9_2_mbox_conf')(net['conv9_2'])
     net['conv9_2_mbox_conf_flat']   = Flatten(name='conv9_2_mbox_conf_flat')(net['conv9_2_mbox_conf'])
     
     # 将所有结果进行堆叠
