@@ -67,8 +67,6 @@ def fit_one_epoch(net, multiloss, loss_history, optimizer, epoch, epoch_step, ep
             if iteration >= epoch_step:
                 break
             images, targets = batch[0], batch[1]
-            targets         = tf.convert_to_tensor(targets)
-            
             loss_value      = train_step(images, multiloss, targets, net, optimizer)
             loss            = loss_value + loss
 
@@ -83,8 +81,6 @@ def fit_one_epoch(net, multiloss, loss_history, optimizer, epoch, epoch_step, ep
             if iteration>=epoch_step_val:
                 break
             images, targets = batch[0], batch[1]
-            targets         = tf.convert_to_tensor(targets)
-
             loss_value      = val_step(images, multiloss, targets, net)
             val_loss        = val_loss + loss_value
 
