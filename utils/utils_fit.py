@@ -29,18 +29,36 @@ def get_train_step_fn(strategy):
             return strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_losses, axis=None)
         return distributed_train_step
 
-@tf.function
-def val_step(images, multiloss, targets, net):
-    prediction = net(images)
-    loss_value = multiloss(targets, prediction)
-    #------------------------------#
-    #   添加上l2正则化参数
-    #------------------------------#
-    loss_value  = tf.reduce_sum(net.losses) + loss_value
-    return loss_value
+#----------------------#
+#   防止bug
+#----------------------#
+def get_val_step_fn(strategy):
+    @tf.function
+    def val_step(images, multiloss, targets, net):
+        prediction = net(images)
+        loss_value = multiloss(targets, prediction)
+        #------------------------------#
+        #   添加上l2正则化参数
+        #------------------------------#
+        loss_value  = tf.reduce_sum(net.losses) + loss_value
+        return loss_value
+    if strategy == None:
+        return val_step
+    else:
+        #----------------------#
+        #   多gpu验证
+        #----------------------#
+        @tf.function
+        def distributed_val_step(images, multiloss, targets, net):
+            per_replica_losses = strategy.run(val_step, args=(images, multiloss, targets, net,))
+            return strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_losses,
+                                    axis=None)
+        return distributed_val_step
 
 def fit_one_epoch(net, multiloss, loss_history, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, Epoch, save_period, save_dir, strategy):
     train_step  = get_train_step_fn(strategy)
+    val_step    = get_val_step_fn(strategy)
+    
     loss        = 0
     val_loss    = 0
     print('Start Train')
@@ -54,8 +72,8 @@ def fit_one_epoch(net, multiloss, loss_history, optimizer, epoch, epoch_step, ep
             loss_value      = train_step(images, multiloss, targets, net, optimizer)
             loss            = loss_value + loss
 
-            pbar.set_postfix(**{'loss'  : float(loss) / (iteration + 1), 
-                                'lr'    : optimizer._decayed_lr(tf.float32).numpy()})
+            pbar.set_postfix(**{'train_loss'    : float(loss) / (iteration + 1), 
+                                'lr'            : optimizer._decayed_lr(tf.float32).numpy()})
             pbar.update(1)
     print('Finish Train')
 
@@ -70,7 +88,7 @@ def fit_one_epoch(net, multiloss, loss_history, optimizer, epoch, epoch_step, ep
             loss_value      = val_step(images, multiloss, targets, net)
             val_loss        = val_loss + loss_value
 
-            pbar.set_postfix(**{'loss' : float(val_loss)/ (iteration + 1)})
+            pbar.set_postfix(**{'val_loss' : float(val_loss)/ (iteration + 1)})
             pbar.update(1)
     print('Finish Validation')
 
