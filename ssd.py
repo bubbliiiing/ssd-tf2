@@ -63,7 +63,6 @@ class SSD(object):
     #---------------------------------------------------#
     def __init__(self, **kwargs):
         self.__dict__.update(self._defaults)
-        show_config(**self._defaults)
         for name, value in kwargs.items():
             setattr(self, name, value)
         #---------------------------------------------------#
@@ -82,6 +81,8 @@ class SSD(object):
         
         self.bbox_util = BBoxUtility(self.num_classes, nms_thresh=self.nms_iou)
         self.generate()
+
+        show_config(**self._defaults)
 
     #---------------------------------------------------#
     #   载入模型
